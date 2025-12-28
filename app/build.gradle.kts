@@ -41,7 +41,12 @@ android {
 }
 
 dependencies {
-
+    val lifecycle_version = "2.6.2" // Check for the latest stable version
+    val  nav_version = "2.9.6"
+    val room_version = "2.6.1"
+    ksp( "androidx.room:room-compiler:$room_version" ) // replaces kapt
+    implementation( "androidx.room:room-runtime:$room_version")  // core Room
+    implementation( "androidx.room:room-ktx:$room_version")      // coroutine support
     implementation(libs.coil)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
