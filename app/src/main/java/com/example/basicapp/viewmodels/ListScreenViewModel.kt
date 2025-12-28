@@ -1,24 +1,24 @@
 package com.example.basicapp.viewmodels
 
 import android.util.Log
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.basicapp.api.NetworkResponse
 import com.example.basicapp.api.RetroFitInstance
 import com.example.basicapp.data.Users
+import com.example.basicapp.data.toEntity
+import com.example.basicapp.db.userdetail.UserDetailEntity
+import com.example.basicapp.db.userdetail.UserDetailRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class ListScreenViewModel: ViewModel() {
+class ListScreenViewModel(
+    val userDetailRepository: UserDetailRepository
+): ViewModel() {
     private val TAG = "ListScreenViewModel"
     private val userDetailService = RetroFitInstance.getInstance
-    private val _uiState = MutableStateFlow<NetworkResponse<Users>>(NetworkResponse.Loading)
-    val uiState: MutableStateFlow<NetworkResponse<Users>> = _uiState
+    private val _uiState = MutableStateFlow<NetworkResponse<List<UserDetailEntity>>>(NetworkResponse.Loading)
+    val uiState: MutableStateFlow<NetworkResponse<List<UserDetailEntity>>> = _uiState
 
     fun getAllUserDetails(results: Int){
         viewModelScope.launch {
@@ -27,7 +27,9 @@ class ListScreenViewModel: ViewModel() {
                 if (response.isSuccessful) {
                     val data = response.body()
                     if(data!=null) {
-                        _uiState.value = NetworkResponse.Success(data)
+                        userDetailRepository.insertAll(data.toEntity(data.results))
+                        val dbData = userDetailRepository.getAllUsersDetail()
+                        _uiState.value = NetworkResponse.Success(dbData)
                     } else {
                         Log.d(TAG, "unsuccessful request "+"body is null")
                     }
@@ -39,5 +41,7 @@ class ListScreenViewModel: ViewModel() {
             }
         }
     }
+
+
 
 }
