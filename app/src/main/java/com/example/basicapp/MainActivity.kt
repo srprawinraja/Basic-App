@@ -24,10 +24,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        listScreenViewModel.getAllUserDetails(25);
         setContent {
             BasicAppTheme {
-
+                ListScreen(listScreenViewModel)
             }
         }
     }
@@ -35,5 +34,5 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun Test(){
-    ListScreen()
+    //ListScreen()
 }
