@@ -18,6 +18,9 @@ class UserDetailRepository(context: Context) {
 
     suspend fun getAllUsersDetail() = userDetailDao.getAllUser()
 
+
+    suspend fun getUser(id: Int) = userDetailDao.getUser(id)
+
     suspend fun clearUsers() = userDetailDao.clearUsers()
 
 }

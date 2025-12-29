@@ -19,11 +19,17 @@ class ListScreenViewModel(
     private val userDetailService = RetroFitInstance.getInstance
     private val _uiState = MutableStateFlow<NetworkResponse<List<UserDetailEntity>>>(NetworkResponse.Loading)
     val uiState: MutableStateFlow<NetworkResponse<List<UserDetailEntity>>> = _uiState
-
-    fun getAllUserDetails(results: Int){
+    var pagination: Int = 0
+    init {
+        viewModelScope.launch {
+            userDetailRepository.clearUsers()
+        }
+    }
+    fun getAllUserDetails(){
         viewModelScope.launch {
             try {
-                val response = userDetailService.getAllUserDetails(results)
+                pagination+=25
+                val response = userDetailService.getAllUserDetails(pagination)
                 if (response.isSuccessful) {
                     val data = response.body()
                     if(data!=null) {
@@ -41,7 +47,5 @@ class ListScreenViewModel(
             }
         }
     }
-
-
 
 }
