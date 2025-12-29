@@ -23,4 +23,6 @@ class UserDetailRepository(context: Context) {
 
     suspend fun clearUsers() = userDetailDao.clearUsers()
 
+    suspend fun getFilteredUsers(query: String) = userDetailDao.filterBasedOnName(query)
+
 }

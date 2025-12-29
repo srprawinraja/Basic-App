@@ -14,6 +14,8 @@ fun Users.toEntity(results: List<Result>): List<UserDetailEntity> {
             UserDetailEntity(
                 profilePic = result.picture.large,
                 fullName = result.name.first + " " + result.name.last,
+                firstName = result.name.first,
+                lastName = result.name.last,
                 gender = result.gender,
                 age = result.dob.age.toString(),
                 email = result.email,

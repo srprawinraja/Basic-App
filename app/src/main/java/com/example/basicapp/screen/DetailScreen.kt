@@ -58,7 +58,7 @@ fun DetailScreen(
                     titleContentColor =  colorResource(R.color.violet)
                 ),
                 title = {
-                    Text("Listing Screen", color = Color.White)
+                    Text("Detail Screen", color = Color.White)
                 }
             )
         },
@@ -109,7 +109,7 @@ fun Details(uiData: UserDetailEntity, paddingValues: PaddingValues) {
                 )
             }
             Column (
-                modifier = Modifier.fillMaxWidth().padding(10.dp)
+                modifier = Modifier.fillMaxWidth().padding(20.dp)
             ){
                 Text(text = stringResource(R.string.full_name), modifier = Modifier.padding(bottom = 5.dp), fontSize = 15.sp)
                 Text(text = uiData.fullName, fontSize = 20.sp, color =  colorResource(R.color.grey),)

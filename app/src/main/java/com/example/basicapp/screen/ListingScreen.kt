@@ -58,6 +58,7 @@ import com.example.basicapp.viewmodels.ListScreenViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -68,20 +69,22 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import com.example.basicapp.R
 import com.example.basicapp.db.userdetail.UserDetailEntity
 
 private val TAG: String = "ListingScreen"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreenViewModel){
+fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreenViewModel) {
 
     val gridState = rememberLazyStaggeredGridState()
 
     val uiData = listScreenViewModel.uiState.collectAsState().value
     LaunchedEffect(Unit) {
-        if(uiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails();
+        if (uiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails();
     }
     Scaffold(
         topBar = {
@@ -96,11 +99,13 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
             )
         },
     ) { paddingValues ->
-        Column (
-            modifier = Modifier.background(Color.White).fillMaxSize().
-            padding(paddingValues = paddingValues)
+        Column(
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxSize()
+                .padding(paddingValues = paddingValues)
                 .padding(25.dp)
-        ){
+        ) {
             when (uiData) {
                 is NetworkResponse.Success -> {
                     ListOfProfile(
@@ -138,38 +143,39 @@ fun ListOfProfile(
     listScreenViewModel: ListScreenViewModel,
 ) {
 
-        val searchState = rememberSearchBarState()
+    val searchState = rememberSearchBarState()
 
-        LaunchedEffect(searchState.currentValue) {
-            // This runs every time the text changes
-            val query = searchState.currentValue
-            println("Search query: $query")
-        }
-        val textFieldState = rememberTextFieldState()
+    LaunchedEffect(searchState.currentValue) {
+        // This runs every time the text changes
+        val query = searchState.currentValue
+        println("Search query: $query")
+    }
+    val textFieldState = rememberTextFieldState()
     Spacer(modifier = Modifier.height(20.dp))
 
     SimpleSearchBar(
-            textFieldState,
-            onSearch = {},
-            modifier = Modifier
-        )
-        Spacer(modifier = Modifier.height(20.dp))
+        textFieldState,
+        listScreenViewModel
+    )
+    Spacer(modifier = Modifier.height(20.dp))
 
-        LazyVerticalStaggeredGrid(
-            modifier = Modifier.fillMaxSize().background(Color.White),
-            state = gridState,
-            columns = StaggeredGridCells.Fixed(2),
-            verticalItemSpacing = 8.dp,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-            items(
-                users.size
-            ) { index ->
-                val row = index / 2
-                val isSquare =
-                    (row % 2 == 0 && index % 2 == 0) ||
-                            (row % 2 == 1 && index % 2 == 0)
-                Log.d(TAG, isSquare.toString()+" "+index.toString())
+    LazyVerticalStaggeredGrid(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        state = gridState,
+        columns = StaggeredGridCells.Fixed(2),
+        verticalItemSpacing = 8.dp,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(
+            users.size
+        ) { index ->
+            val row = index / 2
+            val isSquare =
+                (row % 2 == 0 && index % 2 == 0) ||
+                        (row % 2 == 1 && index % 2 == 0)
+            Column {
                 AsyncImage(
                     model = users[index].profilePic,
                     contentDescription = null,
@@ -177,20 +183,29 @@ fun ListOfProfile(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(
-                            if (isSquare) 1f else  4f / 2f
+                            if (isSquare) 1f else 4f / 2f
                         )
                         .clickable {
                             navController.navigate("detail/${users[index].id}")
                         }
                 )
-
+                Text(
+                    users[index].fullName,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Black),
+                    textAlign = TextAlign.Center,
+                    color = Color.White
+                )
             }
-        }
 
-    LaunchedEffect(gridState) {
+        }
+    }
+
+    LaunchedEffect(gridState, users) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastVisibleIndex ->
-                if (lastVisibleIndex != null && lastVisibleIndex >= users.size - 5) {
+                if (textFieldState.text.isEmpty() && lastVisibleIndex != null && lastVisibleIndex >= users.size - 5) {
                     listScreenViewModel.getAllUserDetails()
                 }
             }
@@ -202,16 +217,19 @@ fun ListOfProfile(
 @Composable
 fun SimpleSearchBar(
     textFieldState: TextFieldState,
-    onSearch: (String) -> Unit,
-    modifier: Modifier = Modifier
+    listScreenViewModel: ListScreenViewModel
 ) {
 
     TextField(
         value = textFieldState.text.toString(),
-        onValueChange = { textFieldState.edit { replace(0, length, it) } },
+        onValueChange = {
+            textFieldState.edit { replace(0, length, it) }
+            listScreenViewModel.searchByName(textFieldState.text.toString())
+        },
         modifier = Modifier
             .fillMaxWidth()
-            .background(colorResource(R.color.light_grey),shape = RoundedCornerShape(16.dp),
+            .background(
+                colorResource(R.color.light_grey), shape = RoundedCornerShape(16.dp),
             ),
         shape = RoundedCornerShape(16.dp),
 

@@ -6,7 +6,7 @@ import com.example.basicapp.db.userdetail.UserDetailDao
 import com.example.basicapp.db.userdetail.UserDetailEntity
 
 
-@Database(entities = [UserDetailEntity::class], version = 1, exportSchema = true)
+@Database(entities = [UserDetailEntity::class], version = 1, exportSchema = false)
 abstract class UserDetailDatabase : RoomDatabase() {
     abstract fun userDetailDao(): UserDetailDao
 }
