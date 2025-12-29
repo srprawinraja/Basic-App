@@ -103,7 +103,7 @@ fun Details(uiData: UserDetailEntity, paddingValues: PaddingValues) {
                     placeholder = painterResource(R.drawable.error_icon),
                     contentDescription = "Quote Image",
                     modifier = Modifier
-                        .size(50.dp)
+                        .size(250.dp)
                         .clip(CircleShape)
 
                 )
@@ -111,28 +111,24 @@ fun Details(uiData: UserDetailEntity, paddingValues: PaddingValues) {
             Column (
                 modifier = Modifier.fillMaxWidth().padding(10.dp)
             ){
-                Text(
-                    text = stringResource(R.string.full_name),
-                    color =  colorResource(R.color.grey),
-                    modifier = Modifier.padding(bottom = 5.dp)
-                )
-                Text(text = uiData.fullName, fontSize = 15.sp)
+                Text(text = stringResource(R.string.full_name), modifier = Modifier.padding(bottom = 5.dp), fontSize = 15.sp)
+                Text(text = uiData.fullName, fontSize = 20.sp, color =  colorResource(R.color.grey),)
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Text(text = stringResource(R.string.gender), color = colorResource(R.color.grey))
-                Text(text = uiData.gender, fontSize = 15.sp)
+                Text(text = stringResource(R.string.gender), fontSize = 15.sp)
+                Text(text = uiData.gender, fontSize = 20.sp, color = colorResource(R.color.grey),)
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Text(text = stringResource(R.string.age), color = colorResource(R.color.grey))
-                Text(text = uiData.age, fontSize = 15.sp)
+                Text(text = stringResource(R.string.age), fontSize = 15.sp)
+                Text(text = uiData.age, fontSize = 20.sp, color = colorResource(R.color.grey),)
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(text = stringResource(R.string.email), color = colorResource(R.color.grey))
-                Text(text = uiData.email, fontSize = 15.sp)
+                Text(text = stringResource(R.string.email), fontSize = 15.sp)
+                Text(text = uiData.email, fontSize = 20.sp, color = colorResource(R.color.grey),)
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(text = stringResource(R.string.phone_number), color = colorResource(R.color.grey))
-                Text(uiData.ph, fontSize = 15.sp)
+                Text(text = stringResource(R.string.phone_number), fontSize = 15.sp)
+                Text(uiData.ph, fontSize = 20.sp,color = colorResource(R.color.grey),)
             }
         }
 

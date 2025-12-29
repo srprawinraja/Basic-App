@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
@@ -97,7 +99,7 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
         Column (
             modifier = Modifier.background(Color.White).fillMaxSize().
             padding(paddingValues = paddingValues)
-                .padding(15.dp)
+                .padding(25.dp)
         ){
             when (uiData) {
                 is NetworkResponse.Success -> {
@@ -144,37 +146,42 @@ fun ListOfProfile(
             println("Search query: $query")
         }
         val textFieldState = rememberTextFieldState()
-        SimpleSearchBar(
+    Spacer(modifier = Modifier.height(20.dp))
+
+    SimpleSearchBar(
             textFieldState,
             onSearch = {},
             modifier = Modifier
         )
+        Spacer(modifier = Modifier.height(20.dp))
 
         LazyVerticalStaggeredGrid(
             modifier = Modifier.fillMaxSize().background(Color.White),
             state = gridState,
             columns = StaggeredGridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(0.dp),
-        ) {
+            verticalItemSpacing = 8.dp,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
             items(
                 users.size
             ) { index ->
-                val row = index / 2;
+                val row = index / 2
+                val isSquare =
+                    (row % 2 == 0 && index % 2 == 0) ||
+                            (row % 2 == 1 && index % 2 == 0)
+                Log.d(TAG, isSquare.toString()+" "+index.toString())
                 AsyncImage(
                     model = users[index].profilePic,
-                    placeholder = painterResource(R.drawable.error_icon),
-                    contentDescription = "Quote Image",
-                    modifier = (if (row % 2 == 0)
-                        if (index % 2 == 1)
-                            Modifier.size(250.dp)
-                        else Modifier.size(250.dp)
-                    else
-                        if (index % 2 == 1)
-                            Modifier.size(250.dp)
-                        else Modifier.size(250.dp)).clickable {
-                        navController.navigate("detail/${users[index].id}")
-                    }
-
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(
+                            if (isSquare) 1f else  4f / 2f
+                        )
+                        .clickable {
+                            navController.navigate("detail/${users[index].id}")
+                        }
                 )
 
             }
@@ -198,16 +205,16 @@ fun SimpleSearchBar(
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Controls expansion state of the search bar
 
     TextField(
         value = textFieldState.text.toString(),
         onValueChange = { textFieldState.edit { replace(0, length, it) } },
         modifier = Modifier
             .fillMaxWidth()
-            .background(colorResource(R.color.light_grey))
-            .padding(0.dp),
+            .background(colorResource(R.color.light_grey),shape = RoundedCornerShape(16.dp),
+            ),
         shape = RoundedCornerShape(16.dp),
+
         placeholder = { Text("Search...", color = colorResource(R.color.violet)) },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = colorResource(R.color.light_grey),
@@ -223,7 +230,8 @@ fun SimpleSearchBar(
             Icon(
                 painter = painterResource(R.drawable.search_icon),
                 contentDescription = "search icon",
-                tint = colorResource(R.color.violet)
+                tint = colorResource(R.color.violet),
+                modifier = Modifier.size(30.dp)
             )
         }
     )
