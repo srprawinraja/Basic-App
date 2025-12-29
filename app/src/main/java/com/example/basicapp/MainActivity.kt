@@ -88,6 +88,6 @@ fun AppNavigation(
 @Composable
 fun Test() {
     ListScreen(
-        navController = NavHostController(LocalContext.current),     ListScreenViewModel(UserDetailRepository(LocalContext.current))
+        navController = NavHostController(LocalContext.current), ListScreenViewModel(UserDetailRepository(LocalContext.current))
     )
 }

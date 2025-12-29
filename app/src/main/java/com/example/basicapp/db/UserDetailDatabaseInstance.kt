@@ -5,9 +5,7 @@ import androidx.room.Room
 
 class UserDetailDatabaseInstance {
     companion object {
-        @Volatile
         private var INSTANCE: UserDetailDatabase? = null
-
         fun getInstance(context: Context): UserDetailDatabase {
             return INSTANCE ?: Room.databaseBuilder(
                 context.applicationContext,

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.basicapp.db.userdetail.UserDetailRepository
-import com.example.basicapp.helper.ContextHelper
 import com.example.basicapp.viewmodels.DetailScreenViewModel
 import com.example.basicapp.viewmodels.ListScreenViewModel
 
