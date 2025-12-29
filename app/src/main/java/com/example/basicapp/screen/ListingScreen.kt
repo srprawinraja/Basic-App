@@ -2,20 +2,49 @@ package com.example.basicapp.screen
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -24,46 +53,40 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.basicapp.api.NetworkResponse
-import com.example.basicapp.ui.theme.customViolet
 import com.example.basicapp.viewmodels.ListScreenViewModel
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
+import androidx.navigation.NavHostController
 import com.example.basicapp.R
 import com.example.basicapp.db.userdetail.UserDetailEntity
 
 private val TAG: String = "ListingScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListScreen(listScreenViewModel: ListScreenViewModel){
+fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreenViewModel){
 
-    val gridState = rememberLazyGridState()
+    val gridState = rememberLazyStaggeredGridState()
 
     val uiData = listScreenViewModel.uiState.collectAsState().value
     LaunchedEffect(Unit) {
-        if(uiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails(25);
+        if(uiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails();
     }
-    when(uiData){
-        is NetworkResponse.Success ->{
-            ListOfProfile(uiData.data, gridState, listScreenViewModel)
-        }
-        is NetworkResponse.Loading -> {
-            CircularProgressIndicator()
-        }
-        is NetworkResponse.Error -> {
-            Log.e(TAG, uiData.message)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ListOfProfile(users: List<UserDetailEntity>, gridState: LazyGridState, listScreenViewModel: ListScreenViewModel){
     Scaffold(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = customViolet,
-                    titleContentColor = customViolet,
+                    containerColor = colorResource(R.color.violet),
+                    titleContentColor = colorResource(R.color.violet),
                 ),
                 title = {
                     Text("Listing Screen", color = Color.White)
@@ -71,29 +94,138 @@ fun ListOfProfile(users: List<UserDetailEntity>, gridState: LazyGridState, listS
             )
         },
     ) { paddingValues ->
-        LazyVerticalGrid(
-            modifier = Modifier.padding(paddingValues).fillMaxSize().background(Color.White),
-            columns = GridCells.Fixed(2),
-            state = gridState
+        Column (
+            modifier = Modifier.background(Color.White).fillMaxSize().
+            padding(paddingValues = paddingValues)
+                .padding(15.dp)
+        ){
+            when (uiData) {
+                is NetworkResponse.Success -> {
+                    ListOfProfile(
+                        navController,
+                        uiData.data,
+                        gridState,
+                        listScreenViewModel,
+                    )
+                }
+
+                is NetworkResponse.Loading -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                is NetworkResponse.Error -> {
+                    Log.e(TAG, uiData.message)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ListOfProfile(
+    navController: NavHostController,
+    users: List<UserDetailEntity>,
+    gridState: LazyStaggeredGridState,
+    listScreenViewModel: ListScreenViewModel,
+) {
+
+        val searchState = rememberSearchBarState()
+
+        LaunchedEffect(searchState.currentValue) {
+            // This runs every time the text changes
+            val query = searchState.currentValue
+            println("Search query: $query")
+        }
+        val textFieldState = rememberTextFieldState()
+        SimpleSearchBar(
+            textFieldState,
+            onSearch = {},
+            modifier = Modifier
+        )
+
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier.fillMaxSize().background(Color.White),
+            state = gridState,
+            columns = StaggeredGridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(0.dp),
         ) {
-            items (
+            items(
                 users.size
-            ){ index->
+            ) { index ->
+                val row = index / 2;
                 AsyncImage(
                     model = users[index].profilePic,
                     placeholder = painterResource(R.drawable.error_icon),
                     contentDescription = "Quote Image",
-                    modifier = Modifier.height(200.dp).width(200.dp)
+                    modifier = (if (row % 2 == 0)
+                        if (index % 2 == 1)
+                            Modifier.size(250.dp)
+                        else Modifier.size(250.dp)
+                    else
+                        if (index % 2 == 1)
+                            Modifier.size(250.dp)
+                        else Modifier.size(250.dp)).clickable {
+                        navController.navigate("detail/${users[index].id}")
+                    }
+
                 )
+
             }
         }
-    }
+
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastVisibleIndex ->
                 if (lastVisibleIndex != null && lastVisibleIndex >= users.size - 5) {
-                    listScreenViewModel.getAllUserDetails(25)
+                    listScreenViewModel.getAllUserDetails()
                 }
             }
     }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SimpleSearchBar(
+    textFieldState: TextFieldState,
+    onSearch: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Controls expansion state of the search bar
+
+    TextField(
+        value = textFieldState.text.toString(),
+        onValueChange = { textFieldState.edit { replace(0, length, it) } },
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colorResource(R.color.light_grey))
+            .padding(0.dp),
+        shape = RoundedCornerShape(16.dp),
+        placeholder = { Text("Search...", color = colorResource(R.color.violet)) },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = colorResource(R.color.light_grey),
+            unfocusedContainerColor = colorResource(R.color.light_grey),
+            cursorColor = colorResource(R.color.violet),
+            focusedTextColor = colorResource(R.color.violet),
+            unfocusedTextColor = colorResource(R.color.violet),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        ),
+        singleLine = true,
+        leadingIcon = {
+            Icon(
+                painter = painterResource(R.drawable.search_icon),
+                contentDescription = "search icon",
+                tint = colorResource(R.color.violet)
+            )
+        }
+    )
+
 }
