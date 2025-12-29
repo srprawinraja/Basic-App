@@ -10,5 +10,6 @@ object RetroFitInstance{
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-    val getInstance = retrofit.create(UserService::class.java)
+    val getInstance: UserService = retrofit.create(UserService::class.java)
+
 }

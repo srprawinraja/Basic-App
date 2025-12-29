@@ -21,4 +21,10 @@ interface UserDetailDao {
 
     @Query("DELETE FROM UserDetailEntity")
     suspend fun clearUsers()
+
+    @Query("SELECT * FROM UserDetailEntity " +
+            "where first_name LIKE '%' || :query || '%' " +
+            "OR  last_name LIKE '%' || :query || '%' " +
+            "OR (first_name || ' ' || last_name) LIKE '%' || :query || '%'")
+    suspend fun filterBasedOnName(query: String): List<UserDetailEntity>
 }

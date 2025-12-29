@@ -43,9 +43,25 @@ class ListScreenViewModel(
                     Log.d(TAG, "unsuccessful request "+response.code()+" "+response.message().toString())
                 }
             } catch (e: Exception){
-                Log.d(TAG, "exception occurred ${e.message}")
+                Log.d(TAG, "exception occurred when getting from api ${e.message}")
             }
         }
     }
+    fun searchByName(query: String){
+        viewModelScope.launch {
+            try {
+                var dbData:  List<UserDetailEntity>
+                if(query.trim().isEmpty()){
+                    dbData = userDetailRepository.getAllUsersDetail()
+                } else {
+                     dbData = userDetailRepository.getFilteredUsers(query)
+                }
+                _uiState.value = NetworkResponse.Success(dbData)
+            } catch (e: Exception){
+                Log.d(TAG, "exception occurred when filtering out ${e.message}")
+            }
+        }
+    }
+
 
 }

@@ -10,6 +10,8 @@ data class UserDetailEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0, // auto-increment
     @ColumnInfo(name = "profile_pic") val profilePic: String,
     @ColumnInfo(name = "full_name") val fullName: String,
+    @ColumnInfo(name = "first_name") val firstName: String,
+    @ColumnInfo(name = "last_name") val lastName: String,
     @ColumnInfo(name = "gender") val gender: String,
     @ColumnInfo(name = "age") val age: String,
     @ColumnInfo(name = "email") val email: String,
