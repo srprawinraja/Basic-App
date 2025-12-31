@@ -46,14 +46,21 @@ fun DetailScreen(
     detailScreenViewModel: DetailScreenViewModel,
     id: Int
 ){
-    val uiData = detailScreenViewModel.uiState.collectAsState().value
+    val userUiData = detailScreenViewModel.userUiState.collectAsState().value
+    val weatherUiData = detailScreenViewModel.weatherUiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         detailScreenViewModel.getUserDetail(id)
     }
-    CustomScaffoldComponent("Detail Screen") { paddingValues ->
-        when(uiData){
+
+    CustomScaffoldComponent(
+        title = "Detail Screen",
+        weatherData = weatherUiData
+    ) { paddingValues ->
+        when(userUiData){
             is NetworkResponse.Success -> {
-                Details(uiData.data, paddingValues)
+                detailScreenViewModel.getWeatherDetail(userUiData.data.lat.toDouble(), userUiData.data.lon.toDouble())
+                Details(userUiData.data, paddingValues)
             }
             is NetworkResponse.Loading -> {
                 Column (
@@ -65,7 +72,7 @@ fun DetailScreen(
                 }
             }
             is NetworkResponse.Error -> {
-                Log.d(TAG, uiData.message)
+                Log.d(TAG, userUiData.message)
             }
         }
     }

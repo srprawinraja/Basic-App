@@ -19,7 +19,9 @@ fun Users.toEntity(results: List<Result>): List<UserDetailEntity> {
                 gender = result.gender,
                 age = result.dob.age.toString(),
                 email = result.email,
-                ph = result.phone
+                ph = result.phone,
+                lat = result.location.coordinates.latitude,
+                lon = result.location.coordinates.longitude
             )
         )
     }

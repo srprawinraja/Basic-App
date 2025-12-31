@@ -79,11 +79,15 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
 
     val gridState = rememberLazyStaggeredGridState()
 
-    val uiData = listScreenViewModel.uiState.collectAsState().value
+    val userUiData = listScreenViewModel.userUiState.collectAsState().value
+    val weatherUiData = listScreenViewModel.weatherUiState.collectAsState().value
     LaunchedEffect(Unit) {
-        if (uiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails();
+        if (userUiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails();
     }
-    CustomScaffoldComponent("Listing Screen") { paddingValues ->
+    CustomScaffoldComponent(
+        "Listing Screen",
+        weatherData = weatherUiData
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .background(Color.White)
@@ -91,11 +95,11 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
                 .padding(paddingValues = paddingValues)
                 .padding(25.dp)
         ) {
-            when (uiData) {
+            when (userUiData) {
                 is NetworkResponse.Success -> {
                     ListOfProfile(
                         navController,
-                        uiData.data,
+                        userUiData.data,
                         gridState,
                         listScreenViewModel,
                     )
@@ -112,7 +116,7 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
                 }
 
                 is NetworkResponse.Error -> {
-                    Log.e(TAG, uiData.message)
+                    Log.e(TAG, userUiData.message)
                 }
             }
         }
