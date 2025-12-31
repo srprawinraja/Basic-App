@@ -1,5 +1,7 @@
 package com.example.basicapp.api
 
+import com.example.basicapp.api.service.UserService
+import com.example.basicapp.api.service.WeatherService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

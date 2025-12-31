@@ -1,4 +1,4 @@
-package com.example.basicapp.api
+package com.example.basicapp.api.service
 
 import com.example.basicapp.data.User.Users
 import retrofit2.Response

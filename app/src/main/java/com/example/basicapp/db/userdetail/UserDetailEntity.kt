@@ -16,4 +16,6 @@ data class UserDetailEntity(
     @ColumnInfo(name = "age") val age: String,
     @ColumnInfo(name = "email") val email: String,
     @ColumnInfo(name = "ph") val ph: String,
+    @ColumnInfo(name = "lat") val lat: String,
+    @ColumnInfo(name = "lon") val lon: String,
 )
