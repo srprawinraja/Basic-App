@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.play.service.location)
     implementation(libs.androidx.foundation)
     ksp(libs.room.compiler)
     implementation(libs.room.runtime)

@@ -1,7 +1,6 @@
 package com.example.basicapp.db.userdetail
 
 import android.content.Context
-import com.example.basicapp.data.Users
 import com.example.basicapp.db.UserDetailDatabaseInstance
 
 class UserDetailRepository(context: Context) {

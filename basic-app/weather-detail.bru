@@ -1,0 +1,21 @@
+meta {
+  name: weather-detail
+  type: http
+  seq: 2
+}
+
+get {
+  url: https://api.openweathermap.org/data/2.5/weather?lat=28.6139&lon=77.2090&appid=cede1bfcab162197de0a8735def6e25d
+  body: none
+  auth: inherit
+}
+
+params:query {
+  lat: 28.6139
+  lon: 77.2090
+  appid: cede1bfcab162197de0a8735def6e25d
+}
+
+settings {
+  encodeUrl: true
+}

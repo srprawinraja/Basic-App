@@ -1,4 +1,4 @@
-package com.example.basicapp.data
+package com.example.basicapp.data.User
 
 import com.example.basicapp.db.userdetail.UserDetailEntity
 

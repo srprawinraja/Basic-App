@@ -1,4 +1,4 @@
-package com.example.basicapp.data
+package com.example.basicapp.data.User
 
 data class Id(
     val name: String,

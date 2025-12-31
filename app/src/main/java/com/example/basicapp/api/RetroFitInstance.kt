@@ -5,11 +5,18 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 object RetroFitInstance{
-    const val BASE_URL: String = "https://randomuser.me/"
-    private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
+    const val BASE_URL_USER: String = "https://randomuser.me/"
+    const val BASE_URL_WEATHER: String = "https://api.openweathermap.org/data/2.5/"
+    private val userRetrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL_USER)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-    val getInstance: UserService = retrofit.create(UserService::class.java)
+    private val weatherRetrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL_WEATHER)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+    val userServiceGetInstance: UserService = userRetrofit.create(UserService::class.java)
+    val weatherServiceGetInstance: WeatherService = weatherRetrofit.create(WeatherService::class.java)
+
 
 }

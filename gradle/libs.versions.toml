@@ -17,7 +17,7 @@ ksp = "2.0.21-1.0.27"
 room = "2.6.1"
 navigation =  "2.9.6"
 foundation = "1.10.0"
-
+location = "21.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +44,7 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+play-service-location = { module = "com.google.android.gms:play-services-location", version.ref = "location" }
 
 
 

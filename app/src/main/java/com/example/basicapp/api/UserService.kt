@@ -1,6 +1,6 @@
 package com.example.basicapp.api
 
-import com.example.basicapp.data.Users
+import com.example.basicapp.data.User.Users
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
