@@ -1,4 +1,4 @@
-package com.example.basicapp.data
+package com.example.basicapp.data.User
 
 data class Login(
     val md5: String,

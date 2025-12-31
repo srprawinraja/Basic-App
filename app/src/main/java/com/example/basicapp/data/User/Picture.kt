@@ -1,4 +1,4 @@
-package com.example.basicapp.data
+package com.example.basicapp.data.User
 
 data class Picture(
     val large: String,

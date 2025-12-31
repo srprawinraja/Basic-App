@@ -31,10 +31,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.basicapp.R
 import com.example.basicapp.api.NetworkResponse
+import com.example.basicapp.components.CustomScaffoldComponent
 import com.example.basicapp.db.userdetail.UserDetailEntity
 
 import com.example.basicapp.viewmodels.DetailScreenViewModel
@@ -50,19 +50,7 @@ fun DetailScreen(
     LaunchedEffect(Unit) {
         detailScreenViewModel.getUserDetail(id)
     }
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(R.color.violet),
-                    titleContentColor =  colorResource(R.color.violet)
-                ),
-                title = {
-                    Text("Detail Screen", color = Color.White)
-                }
-            )
-        },
-    ) { paddingValues ->
+    CustomScaffoldComponent("Detail Screen") { paddingValues ->
         when(uiData){
             is NetworkResponse.Success -> {
                 Details(uiData.data, paddingValues)
@@ -87,7 +75,6 @@ fun DetailScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Details(uiData: UserDetailEntity, paddingValues: PaddingValues) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()

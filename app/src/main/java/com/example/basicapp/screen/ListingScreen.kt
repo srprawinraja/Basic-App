@@ -63,15 +63,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import com.example.basicapp.R
+import com.example.basicapp.components.CustomScaffoldComponent
 import com.example.basicapp.db.userdetail.UserDetailEntity
 
 private val TAG: String = "ListingScreen"
@@ -86,19 +83,7 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
     LaunchedEffect(Unit) {
         if (uiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails();
     }
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(R.color.violet),
-                    titleContentColor = colorResource(R.color.violet),
-                ),
-                title = {
-                    Text("Listing Screen", color = Color.White)
-                }
-            )
-        },
-    ) { paddingValues ->
+    CustomScaffoldComponent("Listing Screen") { paddingValues ->
         Column(
             modifier = Modifier
                 .background(Color.White)
@@ -151,7 +136,7 @@ fun ListOfProfile(
         println("Search query: $query")
     }
     val textFieldState = rememberTextFieldState()
-    Spacer(modifier = Modifier.height(20.dp))
+    Spacer(modifier = Modifier.height(5.dp))
 
     SimpleSearchBar(
         textFieldState,
