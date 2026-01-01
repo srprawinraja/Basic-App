@@ -1,6 +1,15 @@
 package com.example.basicapp.screen
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import android.util.Log
+import android.widget.Button
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +20,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,14 +72,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import com.example.basicapp.R
 import com.example.basicapp.components.CustomScaffoldComponent
 import com.example.basicapp.db.userdetail.UserDetailEntity
+import com.google.android.gms.location.LocationServices
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.basicapp.components.AlertBoxComponent
 
 private val TAG: String = "ListingScreen"
 
@@ -78,23 +100,76 @@ private val TAG: String = "ListingScreen"
 fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreenViewModel) {
 
     val gridState = rememberLazyStaggeredGridState()
+    val context = LocalContext.current
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
 
     val userUiData = listScreenViewModel.userUiState.collectAsState().value
     val weatherUiData = listScreenViewModel.weatherUiState.collectAsState().value
-    LaunchedEffect(Unit) {
-        if (userUiData is NetworkResponse.Loading) listScreenViewModel.getAllUserDetails();
+    val showLocationPermissionAlertUi = remember { mutableStateOf(false)}
+    val showLocationAlertUi = remember { mutableStateOf(false)}
+
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                fusedLocationClient.lastLocation
+                    .addOnSuccessListener { location ->
+                        location?.let {
+                            listScreenViewModel.getWeatherDetail(location.latitude, location.longitude)
+                        }
+                    }
+            } else {
+                Log.i(TAG,  "permission denied")
+                showLocationPermissionAlertUi.value = true
+            }
+        }
+    )
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            if(ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED ) {
+                Log.i(TAG, "Permission available")
+                fusedLocationClient.lastLocation
+                    .addOnSuccessListener { location ->
+                        if(location ==null){
+                            if(!listScreenViewModel.isLocationEnabled(context)) {
+                                Log.i(TAG, "location ain't turned on")
+                                showLocationAlertUi.value = true
+                            }
+                        } else {
+                            listScreenViewModel.getWeatherDetail(location.latitude, location.longitude)
+                            Log.d(TAG, "already given "+location.longitude.toString()+" "+location.latitude.toString()+" "+location.time)
+                        }
+                    }
+            }
+            else  {
+                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
     }
+    LaunchedEffect(Unit) {
+        listScreenViewModel.getAllUserDetails()
+    }
+
+
     CustomScaffoldComponent(
         "Listing Screen",
         weatherData = weatherUiData
     ) { paddingValues ->
-        Column(
+        Box (
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxSize()
                 .padding(paddingValues = paddingValues)
                 .padding(25.dp)
         ) {
+
             when (userUiData) {
                 is NetworkResponse.Success -> {
                     ListOfProfile(
@@ -103,12 +178,25 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
                         gridState,
                         listScreenViewModel,
                     )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ){
+                        Column (
+                            modifier = Modifier.fillMaxSize().padding(10.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+
+                        }
+                    }
+
+
                 }
 
                 is NetworkResponse.Loading -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator()
@@ -118,9 +206,45 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
                 is NetworkResponse.Error -> {
                     Log.e(TAG, userUiData.message)
                 }
+
+                NetworkResponse.Empty ->{
+
+                }
+            }
+            if(showLocationAlertUi.value){
+                Column(
+                    modifier = Modifier.fillMaxHeight().padding(10.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                    AlertBoxComponent(message = "Turn on  location so we can provide location-based features.") {
+                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                        context.startActivity(intent)
+                        showLocationAlertUi.value = false
+                    }
+                }
+            }
+            if(showLocationPermissionAlertUi.value){
+                Column(
+                    modifier = Modifier.fillMaxHeight().padding(10.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AlertBoxComponent(message = "Provide location permission so we can provide location-based features.") {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            val uri: Uri = Uri.fromParts("package", context.packageName, null)
+                            data = uri
+                        }
+                        context.startActivity(intent)
+                        showLocationPermissionAlertUi.value = false
+                    }
+                }
             }
         }
     }
+
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

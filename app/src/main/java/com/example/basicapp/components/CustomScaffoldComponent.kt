@@ -37,6 +37,7 @@ import com.example.basicapp.R
 import com.example.basicapp.api.NetworkResponse
 import com.example.basicapp.data.weather.Weather
 import com.example.basicapp.screen.ListOfProfile
+import kotlin.math.min
 
 private val TAG: String = "CustomScaffoldComponent"
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +52,9 @@ fun CustomScaffoldComponent(title: String, weatherData: NetworkResponse<Weather>
                 ),
                 title = {
                     Row (
-                        modifier = Modifier.fillMaxWidth().height(60.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ){
@@ -72,16 +75,28 @@ fun CustomScaffoldComponent(title: String, weatherData: NetworkResponse<Weather>
                                             "o",
                                             color = Color.White,
                                             fontSize = 10.sp,
-                                            modifier = Modifier.alignByBaseline().wrapContentSize()
+                                            modifier = Modifier
+                                                .alignByBaseline()
+                                                .wrapContentSize().padding(top = 5.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column (
-                                        modifier = Modifier.fillMaxHeight().padding(top=13.dp),
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .padding(top = 13.dp),
                                         verticalArrangement = Arrangement.Center
                                     ){
-                                        Text(weatherData.data.weather[0].main, color = Color.White, fontSize = 17.sp, modifier = Modifier.wrapContentSize())
-                                        Text(weatherData.data.weather[0].description, color = Color.White, fontSize = 10.sp,  modifier = Modifier.wrapContentSize().offset(y=-10.dp))
+                                        var name = "unknown location"
+                                        weatherData.data.name.isEmpty().let {
+                                            if(!it){
+                                                name = weatherData.data.name
+                                            }
+                                        }
+                                        Text(name.substring(0, min(name.length, 16)), color = Color.White, fontSize = 17.sp, modifier = Modifier.wrapContentSize())
+                                        Text(weatherData.data.weather[0].description, color = Color.White, fontSize = 10.sp,  modifier = Modifier
+                                            .wrapContentSize()
+                                            .offset(y = -10.dp))
                                     }
                                     AsyncImage(
                                         model = "http://openweathermap.org/img/wn/${weatherData.data.weather[0].icon}@2x.png",
@@ -107,6 +122,9 @@ fun CustomScaffoldComponent(title: String, weatherData: NetworkResponse<Weather>
 
                             is NetworkResponse.Error -> {
                                 Log.e(TAG, weatherData.message)
+                            }
+
+                            NetworkResponse.Empty -> {
                             }
                         }
                     }

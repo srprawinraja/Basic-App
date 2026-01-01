@@ -1,5 +1,8 @@
 package com.example.basicapp.viewmodels
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.LocationManager
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,8 +23,9 @@ class ListScreenViewModel(
     private val _userUiState = MutableStateFlow<NetworkResponse<List<UserDetailEntity>>>(NetworkResponse.Loading)
     val userUiState: MutableStateFlow<NetworkResponse<List<UserDetailEntity>>> = _userUiState
 
-    private val _weatherUiState = MutableStateFlow<NetworkResponse<Weather>>(NetworkResponse.Loading)
+    private val _weatherUiState = MutableStateFlow<NetworkResponse<Weather>>(NetworkResponse.Empty)
     val weatherUiState: MutableStateFlow<NetworkResponse<Weather>> = _weatherUiState
+    private val weatherService = RetroFitInstance.weatherServiceGetInstance
     var pagination: Int = 0
     init {
         viewModelScope.launch {
@@ -43,7 +47,7 @@ class ListScreenViewModel(
                         Log.d(TAG, "unsuccessful request "+"body is null")
                     }
                 } else {
-                    _userUiState.value = NetworkResponse.Error("fasdsa")
+                    _userUiState.value = NetworkResponse.Error(response.message())
                     Log.d(TAG, "unsuccessful request "+response.code()+" "+response.message().toString())
                 }
             } catch (e: Exception){
@@ -66,6 +70,38 @@ class ListScreenViewModel(
             }
         }
     }
+    fun getWeatherDetail(lat: Double, lon: Double){
+        _weatherUiState.value = NetworkResponse.Loading
+        viewModelScope.launch {
+            try{
+                val response = weatherService.getWeatherDetail(lat, lon)
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    if(data!=null) {
+                        weatherUiState.value = NetworkResponse.Success(data)
+                    } else {
+                        Log.d(TAG, "unsuccessful request "+"body is null")
+                    }
+                } else {
+                    weatherUiState.value = NetworkResponse.Error(response.message())
+                    Log.d(TAG, "unsuccessful request "+response.code()+" "+response.message().toString())
+                }
+            } catch (e: Exception){
+                Log.d(TAG, "error occurred "+e.message.toString())
+                NetworkResponse.Error(e.message.toString())
+            }
+        }
+    }
+
+    @SuppressLint("ServiceCast")
+    fun isLocationEnabled(context: Context): Boolean {
+        val locationManager =
+            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
 
 
 }
