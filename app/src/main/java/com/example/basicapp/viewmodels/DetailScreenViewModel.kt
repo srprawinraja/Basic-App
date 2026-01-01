@@ -3,6 +3,7 @@ package com.example.basicapp.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.basicapp.BuildConfig
 import com.example.basicapp.api.NetworkResponse
 import com.example.basicapp.api.RetroFitInstance
 import com.example.basicapp.data.User.toEntity
@@ -35,6 +36,7 @@ class DetailScreenViewModel(val userDetailRepository: UserDetailRepository): Vie
     fun getWeatherDetail(lat: Double, lon: Double){
         viewModelScope.launch {
             try{
+                Log.d(TAG, BuildConfig.API_KEY)
                 val response = weatherService.getWeatherDetail(lat, lon)
                 if (response.isSuccessful) {
                     val data = response.body()

@@ -53,12 +53,14 @@ fun DetailScreen(
         detailScreenViewModel.getUserDetail(id)
     }
 
+
     CustomScaffoldComponent(
         title = "Detail Screen",
         weatherData = weatherUiData
     ) { paddingValues ->
         when(userUiData){
             is NetworkResponse.Success -> {
+                Log.d(TAG, userUiData.data.lat+" "+userUiData.data.lon)
                 detailScreenViewModel.getWeatherDetail(userUiData.data.lat.toDouble(), userUiData.data.lon.toDouble())
                 Details(userUiData.data, paddingValues)
             }
@@ -73,6 +75,10 @@ fun DetailScreen(
             }
             is NetworkResponse.Error -> {
                 Log.d(TAG, userUiData.message)
+            }
+
+            NetworkResponse.Empty -> {
+
             }
         }
     }

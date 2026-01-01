@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,7 +7,17 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use {
+        localProperties.load(it)
+    }
+}
+
+val apiKey = localProperties.getProperty("API_KEY") ?: ""
 android {
+
     namespace = "com.example.basicapp"
     compileSdk = 36
     buildFeatures {
@@ -23,7 +35,7 @@ android {
         buildConfigField(
             "String",
             "API_KEY",
-            "\"${project.properties["API_KEY"]}\""
+            "\"$apiKey\""
         )
     }
 
