@@ -64,7 +64,7 @@ fun AppNavigation(
     listScreenViewModel: ListScreenViewModel,
     detailScreenViewModel: DetailScreenViewModel
 ){
-    val navController = rememberNavController()
+    val navController: NavHostController = rememberNavController()
     NavHost(navController, startDestination = "list" ){
         composable("list"){
             ListScreen(navController, listScreenViewModel)

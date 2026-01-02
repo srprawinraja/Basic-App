@@ -6,15 +6,9 @@ import com.example.basicapp.db.UserDetailDatabaseInstance
 class UserDetailRepository(context: Context) {
     val db = UserDetailDatabaseInstance.Companion.getInstance(context)
     val userDetailDao = db.userDetailDao()
-
-
-
-
     suspend fun insertAll(users: List<UserDetailEntity>){
        userDetailDao.insertAll(users)
     }
-
-
     suspend fun getAllUsersDetail() = userDetailDao.getAllUser()
 
 

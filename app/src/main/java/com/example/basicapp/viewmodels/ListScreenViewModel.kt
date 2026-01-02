@@ -20,12 +20,13 @@ class ListScreenViewModel(
 ): ViewModel() {
     private val TAG = "ListScreenViewModel"
     private val userDetailService = RetroFitInstance.userServiceGetInstance
+    private val weatherService = RetroFitInstance.weatherServiceGetInstance
     private val _userUiState = MutableStateFlow<NetworkResponse<List<UserDetailEntity>>>(NetworkResponse.Loading)
     val userUiState: MutableStateFlow<NetworkResponse<List<UserDetailEntity>>> = _userUiState
 
     private val _weatherUiState = MutableStateFlow<NetworkResponse<Weather>>(NetworkResponse.Empty)
     val weatherUiState: MutableStateFlow<NetworkResponse<Weather>> = _weatherUiState
-    private val weatherService = RetroFitInstance.weatherServiceGetInstance
+
     var pagination: Int = 0
     init {
         viewModelScope.launch {
@@ -44,6 +45,7 @@ class ListScreenViewModel(
                         val dbData = userDetailRepository.getAllUsersDetail()
                         _userUiState.value = NetworkResponse.Success(dbData)
                     } else {
+                        _userUiState.value = NetworkResponse.Error("body is null")
                         Log.d(TAG, "unsuccessful request "+"body is null")
                     }
                 } else {
@@ -93,7 +95,6 @@ class ListScreenViewModel(
         }
     }
 
-    @SuppressLint("ServiceCast")
     fun isLocationEnabled(context: Context): Boolean {
         val locationManager =
             context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -101,7 +102,4 @@ class ListScreenViewModel(
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
-
-
-
 }

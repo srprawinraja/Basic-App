@@ -131,5 +131,4 @@ fun Details(uiData: UserDetailEntity, paddingValues: PaddingValues) {
                 Text(uiData.ph, fontSize = 20.sp,color = colorResource(R.color.grey),)
             }
         }
-
 }

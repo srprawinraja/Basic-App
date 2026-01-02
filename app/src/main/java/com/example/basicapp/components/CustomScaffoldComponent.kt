@@ -125,6 +125,7 @@ fun CustomScaffoldComponent(title: String, weatherData: NetworkResponse<Weather>
                             }
 
                             NetworkResponse.Empty -> {
+
                             }
                         }
                     }

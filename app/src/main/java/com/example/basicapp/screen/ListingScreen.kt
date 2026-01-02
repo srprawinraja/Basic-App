@@ -92,6 +92,7 @@ import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.basicapp.components.AlertBoxComponent
+import com.google.android.gms.location.Priority
 
 private val TAG: String = "ListingScreen"
 
@@ -101,59 +102,69 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
 
     val gridState = rememberLazyStaggeredGridState()
     val context = LocalContext.current
-    val fusedLocationClient = remember {
-        LocationServices.getFusedLocationProviderClient(context)
-    }
-
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val userUiData = listScreenViewModel.userUiState.collectAsState().value
     val weatherUiData = listScreenViewModel.weatherUiState.collectAsState().value
-    val showLocationPermissionAlertUi = remember { mutableStateOf(false)}
-    val showLocationAlertUi = remember { mutableStateOf(false)}
+    val showLocationPermissionAlertUi = remember { mutableStateOf(false) }
+    val showLocationAlertUi = remember { mutableStateOf(false) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
 
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
             if (granted) {
-                fusedLocationClient.lastLocation
-                    .addOnSuccessListener { location ->
+                fusedLocationClient.getCurrentLocation(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    null
+                ).addOnSuccessListener { location ->
                         location?.let {
-                            listScreenViewModel.getWeatherDetail(location.latitude, location.longitude)
+                            listScreenViewModel.getWeatherDetail(
+                                location.latitude,
+                                location.longitude
+                            )
                         }
                     }
             } else {
-                Log.i(TAG,  "permission denied")
                 showLocationPermissionAlertUi.value = true
             }
         }
     )
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            if(ContextCompat.checkSelfPermission(
+            if (ContextCompat.checkSelfPermission(
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED ) {
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 Log.i(TAG, "Permission available")
-                fusedLocationClient.lastLocation
-                    .addOnSuccessListener { location ->
-                        if(location ==null){
-                            if(!listScreenViewModel.isLocationEnabled(context)) {
+                fusedLocationClient.getCurrentLocation(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    null
+                ).addOnSuccessListener { location ->
+                        if (location == null) {
+                            if (!listScreenViewModel.isLocationEnabled(context)) {
                                 Log.i(TAG, "location ain't turned on")
                                 showLocationAlertUi.value = true
                             }
                         } else {
-                            listScreenViewModel.getWeatherDetail(location.latitude, location.longitude)
-                            Log.d(TAG, "already given "+location.longitude.toString()+" "+location.latitude.toString()+" "+location.time)
+                            listScreenViewModel.getWeatherDetail(
+                                location.latitude,
+                                location.longitude
+                            )
+                            Log.d(
+                                TAG,
+                                "already given " + location.longitude.toString() + " " + location.latitude.toString() + " " + location.time
+                            )
                         }
                     }
-            }
-            else  {
-                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            } else {
+                if(!showLocationPermissionAlertUi.value)
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(false) {
         listScreenViewModel.getAllUserDetails()
     }
 
@@ -162,7 +173,7 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
         "Listing Screen",
         weatherData = weatherUiData
     ) { paddingValues ->
-        Box (
+        Box(
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxSize()
@@ -181,12 +192,14 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                    ){
-                        Column (
-                            modifier = Modifier.fillMaxSize().padding(10.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
-                        ){
+                        ) {
 
                         }
                     }
@@ -207,26 +220,15 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
                     Log.e(TAG, userUiData.message)
                 }
 
-                NetworkResponse.Empty ->{
+                NetworkResponse.Empty -> {
 
                 }
             }
-            if(showLocationAlertUi.value){
+            if (showLocationPermissionAlertUi.value) {
                 Column(
-                    modifier = Modifier.fillMaxHeight().padding(10.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                    AlertBoxComponent(message = "Turn on  location so we can provide location-based features.") {
-                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                        context.startActivity(intent)
-                        showLocationAlertUi.value = false
-                    }
-                }
-            }
-            if(showLocationPermissionAlertUi.value){
-                Column(
-                    modifier = Modifier.fillMaxHeight().padding(10.dp),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(10.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -239,10 +241,23 @@ fun ListScreen(navController: NavHostController, listScreenViewModel: ListScreen
                         showLocationPermissionAlertUi.value = false
                     }
                 }
+            } else if (showLocationAlertUi.value) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(10.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AlertBoxComponent(message = "Turn on  location so we can provide location-based features.") {
+                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                        context.startActivity(intent)
+                        showLocationAlertUi.value = false
+                    }
+                }
             }
         }
     }
-
 
 
 }
@@ -256,65 +271,66 @@ fun ListOfProfile(
     listScreenViewModel: ListScreenViewModel,
 ) {
 
-    val searchState = rememberSearchBarState()
 
-    LaunchedEffect(searchState.currentValue) {
-        // This runs every time the text changes
-        val query = searchState.currentValue
-        println("Search query: $query")
-    }
     val textFieldState = rememberTextFieldState()
-    Spacer(modifier = Modifier.height(5.dp))
+    Column (
+        modifier = Modifier.fillMaxSize()
+    ){
+        Spacer(modifier = Modifier.height(20.dp))
 
-    SimpleSearchBar(
-        textFieldState,
-        listScreenViewModel
-    )
-    Spacer(modifier = Modifier.height(20.dp))
+        SimpleSearchBar(
+            textFieldState,
+            listScreenViewModel
+        )
+        Spacer(modifier = Modifier.height(20.dp))
 
-    LazyVerticalStaggeredGrid(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        state = gridState,
-        columns = StaggeredGridCells.Fixed(2),
-        verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(
-            users.size
-        ) { index ->
-            val row = index / 2
-            val isSquare =
-                (row % 2 == 0 && index % 2 == 0) ||
-                        (row % 2 == 1 && index % 2 == 0)
-            Column {
-                AsyncImage(
-                    model = users[index].profilePic,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(
-                            if (isSquare) 1f else 4f / 2f
-                        )
-                        .clickable {
-                            navController.navigate("detail/${users[index].id}")
-                        }
-                )
-                Text(
-                    users[index].fullName,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.Black),
-                    textAlign = TextAlign.Center,
-                    color = Color.White
-                )
+
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            state = gridState,
+            columns = StaggeredGridCells.Fixed(2),
+            verticalItemSpacing = 8.dp,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(
+               count =  users.size
+            ) { index ->
+
+
+
+                val row = index / 2
+                val isSquare =
+                    (row % 2 == 0 && index % 2 == 0) ||
+                            (row % 2 == 1 && index % 2 == 0)
+                Column {
+                    AsyncImage(
+                        model = users[index].profilePic,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(
+                                if (isSquare) 1f else 4f / 2f
+                            )
+                            .clickable {
+                                navController.navigate("detail/${users[index].id}")
+                            }
+                    )
+                    Text(
+                        users[index].fullName,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.Black),
+                        textAlign = TextAlign.Center,
+                        color = Color.White
+                    )
+                }
+
             }
-
         }
     }
-
     LaunchedEffect(gridState, users) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastVisibleIndex ->
