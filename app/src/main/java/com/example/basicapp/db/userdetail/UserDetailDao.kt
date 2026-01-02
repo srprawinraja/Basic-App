@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserDetailDao {
 
-    
     @Insert
     suspend fun insertAll(userDetailEntities: List<UserDetailEntity>)
 

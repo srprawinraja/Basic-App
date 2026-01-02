@@ -36,7 +36,6 @@ class DetailScreenViewModel(val userDetailRepository: UserDetailRepository): Vie
     fun getWeatherDetail(lat: Double, lon: Double){
         viewModelScope.launch {
             try{
-                Log.d(TAG, BuildConfig.API_KEY)
                 val response = weatherService.getWeatherDetail(lat, lon)
                 if (response.isSuccessful) {
                     val data = response.body()

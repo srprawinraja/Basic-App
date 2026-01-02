@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class UserDetailEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0, // auto-increment
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "profile_pic") val profilePic: String,
     @ColumnInfo(name = "full_name") val fullName: String,
     @ColumnInfo(name = "first_name") val firstName: String,

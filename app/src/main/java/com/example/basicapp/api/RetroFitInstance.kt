@@ -19,6 +19,4 @@ object RetroFitInstance{
         .build()
     val userServiceGetInstance: UserService = userRetrofit.create(UserService::class.java)
     val weatherServiceGetInstance: WeatherService = weatherRetrofit.create(WeatherService::class.java)
-
-
 }

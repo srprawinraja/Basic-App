@@ -7,5 +7,4 @@ sealed class NetworkResponse<out T>() {
     data class Error(val message: String): NetworkResponse<Nothing>()
     object Loading: NetworkResponse<Nothing>()
     object Empty: NetworkResponse<Nothing>()
-
 }
